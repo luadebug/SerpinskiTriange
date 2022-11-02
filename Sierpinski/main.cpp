@@ -4,12 +4,7 @@
 #include <imgui_impl_opengl2.h>
 #include <Windows.h>
 
-typedef struct CRect {
-    LONG left;
-    LONG top;
-    LONG right;
-    LONG bottom;
-};
+
 typedef GLfloat point2[2];                                      // define 2d point
 typedef GLfloat point3[3];                                      // define 3d point
 float angleX = 0.0f, angleY = 0.0f, angleZ = 0.0f, zoom = 1.0f;
