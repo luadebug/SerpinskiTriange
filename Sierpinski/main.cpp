@@ -2,30 +2,32 @@
 #include <imgui.h>
 #include <imgui_impl_glut.h>
 #include <imgui_impl_opengl2.h>
-#include <string>
-#include <locale>
-#include <codecvt>
-#define IMGUI_ENABLE_FREETYPE
+#include <Windows.h>
 
+typedef struct CRect {
+    LONG left;
+    LONG top;
+    LONG right;
+    LONG bottom;
+};
 typedef GLfloat point2[2];                                      // define 2d point
 typedef GLfloat point3[3];                                      // define 3d point
 float angleX = 0.0f, angleY = 0.0f, angleZ = 0.0f, zoom = 1.0f;
-point3 v3f[] = { {0.0, 0.0, 1.0},                               // 3d tetrahedron end points
-                 {0.0, 0.942809, -0.333333},
-                 {-0.816497, -0.471405, -0.333333},
-                 {0.816497, -0.471405, -0.333333} };
-GLfloat colors3f[4][3] = { {1.0, 0.0, 0.0},                     // color indexes
-                           {0.0, 1.0, 0.0},
-                           {0.0, 0.0, 1.0},
-                           {0.0, 0.0, 0.0} };
+point3 v3f[] = { {0.0f, 0.0f, 1.0f},                               // 3d tetrahedron end points
+                 {0.0f, 0.942809f, -0.333333f},
+                 {-0.816497f, -0.471405f, -0.333333f},
+                 {0.816497f, -0.471405f, -0.333333f} };
+GLfloat colors3f[4][3] = { {1.0f, 0.0f, 0.0f},                     // color indexes
+                           {0.0f, 1.0f, 0.0f},
+                           {0.0f, 0.0f, 1.0f},
+                           {0.0f, 0.0f, 0.0f} };
 
 int n = 3;                                                      // recursive depth
-int h = 600;                                                    // window height
-int w = 2 * h;                                                  // window width
+int h = 800;                                                    // window height
+int w = 800;                                                // window width
 
 
-void triangle2(point2 a, point2 b, point2 c);                   // draw 2d triangle
-void divide_triangle2(point2 a, point2 b, point2 c, int m);     // find 2d middle points recursively
+
 void triangle3(point3 a, point3 b, point3 c);                   // draw 3d triangle
 void divide_triangle3(point3 a, point3 b, point3 c, int m);     // find 3d middle points recursively
 
@@ -34,18 +36,29 @@ void mydisplay();                                               // display callb
 void init();                                                    // initialize window environment
 
 
-int main(int argc, char* argv[])
+
+INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+    PSTR lpCmdLine, INT nCmdShow)
 {
-    glutInit(&argc, argv);                                      // initialize GLUT
+    
+    glutInit(&__argc, __argv);                                     // initialize GLUT
 
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);   // set window configs
+
+    RECT desktop;
+    // Get a handle to the desktop window
+    const HWND hDesktop = GetDesktopWindow();
+    // Get the size of screen to the variable desktop
+    GetWindowRect(hDesktop, &desktop);
+
+    w = desktop.right, h = desktop.bottom - 100;
     glutInitWindowSize(w, h);                                   // set window size
     glutCreateWindow(u8"Пирамида Серпинского");                             // name window
     glutDisplayFunc(mydisplay);                                 // set display callback
-    
-    IMGUI_CHECKVERSION();
+
+    //IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); 
+    ImGuiIO& io = ImGui::GetIO();
     io.ImeWindowHandle = GetCurrentProcess();
     io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
     io.WantCaptureMouse = true;
@@ -56,131 +69,162 @@ int main(int argc, char* argv[])
     ImFont* font = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\arial.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesCyrillic());
 
     init();                                                     // initialize window
+
+ 
+
     glutMainLoop();                                             // start main event loop
 
     return 1;
-}
-INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-    PSTR lpCmdLine, INT nCmdShow)
-{
-    main(0, (char**)"");
 
 }
+
+
+
+
 void init()
 {
+    
+    
     glEnable(GL_DEPTH_TEST);                                    // enable z-buffer algorithm for hidden-surface removal
     glClearColor(1.0, 1.0, 1.0, 1.0);                           // set background color to white
+    RECT desktop;
+    // Get a handle to the desktop window
+    const HWND hDesktop = GetDesktopWindow();
+    // Get the size of screen to the variable desktop
+    GetWindowRect(hDesktop, &desktop);
+    glViewport(0, 0, desktop.right, desktop.bottom);
+    
 
-
+    
     glMatrixMode(GL_PROJECTION);                                // set projection range 1, 2, 3, 4
     glLoadIdentity();
     gluOrtho2D(-2.0, 2.0, -2.0, 2.0);
     glMatrixMode(GL_MODELVIEW);
+
+
 }
 
 void my_display_code()
 {
     ImGui::SetNextWindowSize(ImVec2(400, 400));
-    ImGui::Begin(u8"Меню");
-    if (ImGui::SliderInt(u8"Глубина", &n, 1, 7))
+    if (ImGui::Begin(u8"Меню"))
     {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Центр X", &v3f[0][0], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Центр Y", &v3f[0][1], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Центр Z", &v3f[0][2], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
+        if (ImGui::SliderInt(u8"Глубина", &n, 1, 7))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Центр X", &v3f[0][0], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Центр Y", &v3f[0][1], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Центр Z", &v3f[0][2], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
 
-    if (ImGui::SliderFloat(u8"Верхняя X", &v3f[1][0], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Верхняя Y", &v3f[1][1], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Верхняя Z", &v3f[1][2], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
+        if (ImGui::SliderFloat(u8"Верхняя X", &v3f[1][0], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Верхняя Y", &v3f[1][1], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Верхняя Z", &v3f[1][2], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
 
-    if (ImGui::SliderFloat(u8"Левая X", &v3f[2][0], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
+        if (ImGui::SliderFloat(u8"Левая X", &v3f[2][0], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Левая Y", &v3f[2][1], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Левая Z", &v3f[2][2], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Правая X", &v3f[3][0], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Правая Y", &v3f[3][1], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Правая Z", &v3f[3][2], -1.0f, 1.0f, "%.1f", 1.0f))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Поворот X", &angleX, 0.0f, 90.0f, "%.1f", 1.0f))
+        {
+            glRotatef(angleX, 1, 0, 0);
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Поворот Y", &angleY, 0.0f, 90.0f, "%.1f", 1.0f))
+        {
+            glRotatef(angleY, 0, 1, 0);
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Поворот Z", &angleZ, 0.0f, 90.0f, "%.1f", 1.0f))
+        {
+            glRotatef(angleZ, 0, 0, 1);
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Масштаб", &zoom, 0.01f, 2.0f, "%.2f", 1.0f))
+        {
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glOrtho(-1.0 - zoom, 1.0 + zoom, -1.0 - zoom, 1.0 + zoom, -20.0, 20.0);
+            glMatrixMode(GL_MODELVIEW);
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::ColorPicker3(u8"Цвет 1 грани", &colors3f[0][0]))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::ColorPicker3(u8"Цвет 2 грани", &colors3f[1][0]))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::ColorPicker3(u8"Цвет 3 грани", &colors3f[2][0]))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::ColorPicker3(u8"Цвет 4 грани", &colors3f[3][0]))
+        {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        ImGui::End();
     }
-    if (ImGui::SliderFloat(u8"Левая Y", &v3f[2][1], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Левая Z", &v3f[2][2], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Правая X", &v3f[3][0], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Правая Y", &v3f[3][1], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Правая Z", &v3f[3][2], -1.0f, 1.0f, "%.1f", 1.0f))
-    {
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Поворот X", &angleX, 0.0f, 90.0f, "%.1f", 1.0f))
-    {
-        glRotatef(angleX, 1, 0, 0);
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Поворот Y", &angleY, 0.0f, 90.0f, "%.1f", 1.0f))
-    {
-        glRotatef(angleY, 0, 1, 0);
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Поворот Z", &angleZ, 0.0f, 90.0f, "%.1f", 1.0f))
-    {
-        glRotatef(angleZ, 0, 0, 1);
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    if (ImGui::SliderFloat(u8"Масштаб", &zoom, 0.01f, 2.0f, "%.2f", 1.0f))
-    {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(-1.0 - zoom, 1.0 + zoom, -1.0 - zoom, 1.0 + zoom, -20.0, 20.0);
-        glMatrixMode(GL_MODELVIEW);
-        glutSwapBuffers();
-        glutPostRedisplay();
-    }
-    ImGui::ColorPicker3(u8"Цвет 1 грани", &colors3f[0][0]);
-    ImGui::ColorPicker3(u8"Цвет 2 грани", &colors3f[1][0]);
-    ImGui::ColorPicker3(u8"Цвет 3 грани", &colors3f[2][0]);
-    ImGui::ColorPicker3(u8"Цвет 4 грани", &colors3f[3][0]);
-    ImGui::End();
 }
 
 void mydisplay()
@@ -215,31 +259,6 @@ void mydisplay()
     glutPostRedisplay();
 }
 
-void triangle2(point2 a, point2 b, point2 c)
-{
-    glVertex2fv(a);
-    glVertex2fv(b);
-    glVertex2fv(c);
-}
-
-void divide_triangle2(point2 a, point2 b, point2 c, int m)
-{
-    point2 v0, v1, v2;
-    if (m > 0) {                                                // expected depth not achieved
-        for (int j = 0; j < 2; j++)                             // update three end points of the triangle
-        {
-            v0[j] = (a[j] + b[j]) / 2;
-            v1[j] = (a[j] + c[j]) / 2;
-            v2[j] = (b[j] + c[j]) / 2;
-        }
-        divide_triangle2(a, v0, v1, m - 1);                     // divide three new triangles respectively
-        divide_triangle2(b, v0, v2, m - 1);
-        divide_triangle2(c, v1, v2, m - 1);
-    }
-    else {                                                      // expected depth achieved, draw triangle
-        triangle2(a, b, c);
-    }
-}
 
 void triangle3(point3 a, point3 b, point3 c)
 {
@@ -250,13 +269,13 @@ void triangle3(point3 a, point3 b, point3 c)
 
 void divide_triangle3(point3 a, point3 b, point3 c, int m)
 {
-    point3 v0, v1, v2;
+    point3 v0{}, v1{}, v2{};
     if (m > 0) {                                                // expected depth not achieved
-        for (int j = 0; j < 3; j++)                             // update three end points of the triangle
+        for (char j = char(0); j < char(3); ++j)                             // update three end points of the triangle
         {
-            v0[j] = (a[j] + b[j]) / 2;
-            v1[j] = (a[j] + c[j]) / 2;
-            v2[j] = (b[j] + c[j]) / 2;
+            v0[j] = (a[j] + b[j]) / 2.f;
+            v1[j] = (a[j] + c[j]) / 2.f;
+            v2[j] = (b[j] + c[j]) / 2.f;
         }
         divide_triangle3(a, v0, v1, m - 1);                     // divide three new triangles respectively
         divide_triangle3(b, v0, v2, m - 1);
@@ -266,8 +285,6 @@ void divide_triangle3(point3 a, point3 b, point3 c, int m)
         triangle3(a, b, c);
     }
 }
-
-
 
 void Sierpinski3(int m)
 {
