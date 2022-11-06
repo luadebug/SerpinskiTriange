@@ -16,7 +16,7 @@ GLfloat colors3f[4][3] = { {1.0f, 0.0f, 0.0f},                     // color inde
                            {0.0f, 1.0f, 0.0f},
                            {0.0f, 0.0f, 1.0f},
                            {0.0f, 0.0f, 0.0f} };
-
+point3 background = { 1.0f, 1.0f, 1.0f };
 int n = 3;                                                      // recursive depth
 int h = 800;                                                    // window height
 int w = 800;                                                // window width
@@ -104,96 +104,97 @@ void my_display_code()
     ImGui::SetNextWindowSize(ImVec2(400, 400));
     if (ImGui::Begin(u8"Меню"))
     {
-        if (ImGui::SliderInt(u8"Глубина", &n, 1, 7))
+        if (ImGui::SliderInt(u8"Глубина", &n, 1, 8))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Центр X", &v3f[0][0], -1.0f, 1.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Центр X", &v3f[0][0], -10.0f, 10.0f, "%.1f", 1.0f))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Центр Y", &v3f[0][1], -1.0f, 1.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Центр Y", &v3f[0][1], -10.0f, 10.0f, "%.1f", 1.0f))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Центр Z", &v3f[0][2], -1.0f, 1.0f, "%.1f", 1.0f))
-        {
-            glutSwapBuffers();
-            glutPostRedisplay();
-        }
-
-        if (ImGui::SliderFloat(u8"Верхняя X", &v3f[1][0], -1.0f, 1.0f, "%.1f", 1.0f))
-        {
-            glutSwapBuffers();
-            glutPostRedisplay();
-        }
-        if (ImGui::SliderFloat(u8"Верхняя Y", &v3f[1][1], -1.0f, 1.0f, "%.1f", 1.0f))
-        {
-            glutSwapBuffers();
-            glutPostRedisplay();
-        }
-        if (ImGui::SliderFloat(u8"Верхняя Z", &v3f[1][2], -1.0f, 1.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Центр Z", &v3f[0][2], -10.0f, 10.0f, "%.1f", 1.0f))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
 
-        if (ImGui::SliderFloat(u8"Левая X", &v3f[2][0], -1.0f, 1.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Верхняя X", &v3f[1][0], -10.0f, 10.0f, "%.1f", 1.0f))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Левая Y", &v3f[2][1], -1.0f, 1.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Верхняя Y", &v3f[1][1], -10.0f, 10.0f, "%.1f", 1.0f))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Левая Z", &v3f[2][2], -1.0f, 1.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Верхняя Z", &v3f[1][2], -10.0f, 10.0f, "%.1f", 1.0f))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Правая X", &v3f[3][0], -1.0f, 1.0f, "%.1f", 1.0f))
+
+        if (ImGui::SliderFloat(u8"Левая X", &v3f[2][0], -10.0f, 10.0f, "%.1f", 1.0f))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Правая Y", &v3f[3][1], -1.0f, 1.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Левая Y", &v3f[2][1], -10.0f, 10.0f, "%.1f", 1.0f))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Правая Z", &v3f[3][2], -1.0f, 1.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Левая Z", &v3f[2][2], -10.0f, 10.0f, "%.1f", 1.0f))
         {
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Поворот X", &angleX, 0.0f, 90.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Правая X", &v3f[3][0], -10.0f, 10.0f, "%.1f", 1.0f))
         {
-            glRotatef(angleX, 1, 0, 0);
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Поворот Y", &angleY, 0.0f, 90.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Правая Y", &v3f[3][1], -10.0f, 10.0f, "%.1f", 1.0f))
         {
-            glRotatef(angleY, 0, 1, 0);
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Поворот Z", &angleZ, 0.0f, 90.0f, "%.1f", 1.0f))
+        if (ImGui::SliderFloat(u8"Правая Z", &v3f[3][2], -10.0f, 10.0f, "%.1f", 1.0f))
         {
-            glRotatef(angleZ, 0, 0, 1);
             glutSwapBuffers();
             glutPostRedisplay();
         }
-        if (ImGui::SliderFloat(u8"Масштаб", &zoom, 0.01f, 2.0f, "%.2f", 1.0f))
+        if (ImGui::SliderFloat(u8"Поворот X", &angleX, 0.0f, 90.0f, "%.2f", 1.0f))
+        {
+            glRotatef(angleX, 0.1f, 0.f, 0.f);
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Поворот Y", &angleY, 0.0f, 90.0f, "%.2f", 1.0f))
+        {
+            glRotatef(angleY, 0.f, 0.1f, 0.f);
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Поворот Z", &angleZ, 0.0f, 90.0f, "%.2f", 1.0f))
+        {
+            glRotatef(angleZ, 0.f, 0.f, 0.1f);
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::SliderFloat(u8"Масштаб", &zoom, 0.001f, 2.0f, "%.3f", 1.0f))
         {
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            glOrtho(-1.0 - zoom, 1.0 + zoom, -1.0 - zoom, 1.0 + zoom, -20.0, 20.0);
+            glOrtho(-zoom, zoom, -zoom, zoom, -20.0, 20.0);
+            //glOrtho(-1.0 - zoom, 1.0 + zoom, -1.0 - zoom, 1.0 + zoom, -20.0, 20.0);
             glMatrixMode(GL_MODELVIEW);
             glutSwapBuffers();
             glutPostRedisplay();
@@ -215,6 +216,20 @@ void my_display_code()
         }
         if (ImGui::ColorPicker3(u8"Цвет 4 грани", &colors3f[3][0]))
         {
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::ColorPicker3(u8"Цвет всех граней", &colors3f[3][0]))
+        {
+            colors3f[0][0] = colors3f[1][0] = colors3f[2][0] = colors3f[3][0];
+            colors3f[0][1] = colors3f[1][1] = colors3f[2][1] = colors3f[3][1];
+            colors3f[0][2] = colors3f[1][2] = colors3f[2][2] = colors3f[3][2];
+            glutSwapBuffers();
+            glutPostRedisplay();
+        }
+        if (ImGui::ColorPicker3(u8"Фон", &background[0]))
+        {
+            glClearColor(background[0], background[1], background[2], 1.0f);
             glutSwapBuffers();
             glutPostRedisplay();
         }
